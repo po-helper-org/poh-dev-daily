@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "jira": {
+      "command": "uvx",
+      "args": ["mcp-atlassian==0.23.1"],
+      "env": {
+        "JIRA_URL": "${user_config.jira_url}",
+        "JIRA_PERSONAL_TOKEN": "${user_config.jira_token}",
+        "TOOLSETS": "all",
+        "ENABLED_TOOLS": "jira_search,jira_get_issue,jira_get_transitions,jira_transition_issue,jira_add_comment,jira_get_issue_development_info"
+      }
+    }
+  }
+}

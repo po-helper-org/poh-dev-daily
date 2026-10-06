@@ -1,0 +1,23 @@
+{
+  "name": "dev-daily",
+  "displayName": "Дейлик разработчика",
+  "version": "0.1.0",
+  "description": "Дейлик через ИИ-агента: рассказ разработчика → сверка с Jira и git → статусы и комментарии после одного «да» → план дня и сводка для команды",
+  "author": { "name": "po-helper-org" },
+  "repository": "https://github.com/po-helper-org/poh-dev-daily",
+  "license": "MIT",
+  "keywords": ["jira", "daily", "standup", "planning"],
+  "userConfig": {
+    "jira_url": {
+      "type": "string",
+      "title": "Адрес Jira",
+      "description": "Корень вашего Jira Server/Data Center, например https://jira.example.com"
+    },
+    "jira_token": {
+      "type": "string",
+      "title": "Personal Access Token Jira",
+      "description": "Jira → профиль → Personal Access Tokens. Хранится в защищённом хранилище, не в settings.json",
+      "sensitive": true
+    }
+  }
+}
