@@ -11,12 +11,12 @@
 Нужны [Claude Code](https://code.claude.com), [`uv`](https://docs.astral.sh/uv/) (`brew install uv`) и доступ к Jira Server/Data Center (из корпоративной сети — с VPN).
 
 1. Personal Access Token: Jira → аватар → **Profile** → **Personal Access Tokens** → **Create token**.
-2. В Claude Code:
+2. В Claude Code — две команды:
    ```
    /plugin marketplace add po-helper-org/poh-dev-daily
    /plugin install dev-daily@poh-dev-daily
    ```
-3. Claude Code спросит адрес Jira и токен. Токен хранится в защищённом хранилище системы (Keychain), не в `settings.json`. Поменять — `/plugin` → dev-daily → **Configure**.
+3. Claude Code спросит адрес Jira и токен. Токен хранится в защищённом хранилище системы (Keychain), не в `settings.json`. Поменять — `/plugin` → dev-daily → **Configure**. Jira на корпоративном сертификате — см. [troubleshooting](skills/daily/troubleshooting.md).
 4. Перезапустите Claude Code и проверьте `/mcp`: сервер `plugin:dev-daily:jira` должен быть в статусе **connected**.
 5. Необязательно, чтобы Claude Code не спрашивал разрешения на запись в Jira и в дневник после «да». Добавьте в `~/.claude/settings.json`:
    ```json
@@ -26,7 +26,7 @@
        "Edit(~/.claude/plugins/data/dev-daily-*/**)"
    ] } }
    ```
-   Чтение Jira и git скилл разрешает себе сам на время своего хода (`allowed-tools`). Записи в Jira и без этого правила идут только после вашего «да».
+   Чтение Jira и git, а также запись профиля и дневника скилл разрешает себе сам на время своего хода (`allowed-tools`). Ход после вашего «да» — уже новый, отсюда это правило. Записи в Jira и без него идут только после вашего «да».
 
 ## Как это выглядит
 
@@ -53,27 +53,25 @@
 Блокер: PAY-98 жду доступ к стенду от DevOps
 ```
 
-Скилл срабатывает сам на «дейлик», «стендап», «что у меня по задачам», «обнови задачи», «план на день». Явный вызов — `/dev-daily:daily`. Чтобы применить без подтверждения, напишите в сообщении «применяй сразу».
+Скилл срабатывает сам на «дейлик», «стендап», «что у меня по задачам», «обнови задачи», «план на день». Явный вызов — `/dev-daily:daily`. Чтобы применить без подтверждения, прямо напишите в сообщении «применяй сразу».
 
-На следующий день агент читает вчерашний план из дневника и спрашивает про **хвосты**: что было в плане, но не прозвучало, что «в работе» без движения 3+ дня, где рассказ расходится с коммитами.
+На следующий день агент читает вчерашний план и блокеры из дневника и спрашивает про **хвосты**: что было в плане, но не прозвучало; снят ли вчерашний блокер; что «в работе» без движения 3+ дня; где рассказ расходится с коммитами.
 
 ## Устройство
 
 | Файл | Что это |
 |---|---|
-| [`skills/daily/SKILL.md`](skills/daily/SKILL.md) | сам скилл: 9 шагов — контекст → Jira → git → сверка → план правок → применение → план дня → сводка → дневник |
-| [`skills/daily/setup.md`](skills/daily/setup.md) | первый запуск: умолчания профиля |
+| [`skills/daily/SKILL.md`](skills/daily/SKILL.md) | сам скилл: 8 шагов — контекст → Jira → git → сверка → план дня → план правок и «да» → применение → итог |
+| [`skills/daily/setup.md`](skills/daily/setup.md) | первый запуск: профиль с умолчаниями, без анкеты |
 | [`skills/daily/troubleshooting.md`](skills/daily/troubleshooting.md) | что делать, если Jira не отвечает |
-| [`.mcp.json`](.mcp.json) | MCP-сервер Jira: [`mcp-atlassian`](https://github.com/sooperset/mcp-atlassian) 0.23.1 через `uvx`, открыто 6 инструментов |
+| [`.mcp.json`](.mcp.json) | MCP-сервер Jira: [`mcp-atlassian`](https://github.com/sooperset/mcp-atlassian) закреплённой версии через `uvx`, белый список инструментов |
 | [`.claude-plugin/`](.claude-plugin/) | манифест плагина (`userConfig`: адрес и токен Jira) и маркетплейс |
 | [`evals/`](evals/) | проверка поведения: `claude plugin eval` с подменной Jira |
 | [`docs/adr/`](docs/adr/) | принятые решения и их причины |
 
 **Личные данные разработчика** — в `~/.claude/plugins/data/dev-daily-poh-dev-daily/` (каталог `${CLAUDE_PLUGIN_DATA}`): `profile.md` (репозитории, рабочий день, проекты Jira) и `journal/ГГГГ-ММ-ДД.md` — дневник: рассказ, правки, план, блокеры. В git-репозитории проекта ничего не пишется. При удалении плагина каталог удаляется; сохранить — `claude plugin uninstall --keep-data`.
 
-**Инструменты Jira** ограничены списком `ENABLED_TOOLS`: `jira_search`, `jira_get_issue`, `jira_get_transitions`, `jira_transition_issue`, `jira_add_comment`, `jira_get_issue_development_info`. Удалить задачу или изменить поля агент не может даже по ошибке.
-
-Если у вас уже подключён свой Jira MCP с инструментами `jira_*` (например, тот же `mcp-atlassian`), скилл работает и с ним — поля плагина можно оставить пустыми.
+**Инструменты Jira** ограничены белым списком `ENABLED_TOOLS` в `.mcp.json`: поиск, чтение задачи, переходы, комментарий, панель разработки. Удалить задачу, изменить поля или исполнителя агент не может даже по ошибке.
 
 ## Проверка
 
@@ -82,7 +80,7 @@ claude plugin validate .
 claude plugin eval . --allow-tools Write "Bash(git *)" "Bash(command -v *)"
 ```
 
-Набор в `evals/` прогоняет HowToDemo без настоящей Jira. В подменной Jira вымышленный проект PAY:
+Флаги `--allow-tools` обязательны: шаги git и запись дневника без них в прогоне недоступны. Набор в `evals/` прогоняет HowToDemo без настоящей Jira. В подменной Jira вымышленный проект PAY:
 
 - `standup-preview` — рассказ без подтверждения: агент читает Jira и показывает план правок, а записей в Jira ноль;
 - `standup-apply` — рассказ с «применяй сразу»: переход PAY-101, комментарий-блокер в PAY-98, PAY-102 не тронут, дневник записан, есть сводка и план дня;
@@ -92,5 +90,5 @@ claude plugin eval . --allow-tools Write "Bash(git *)" "Bash(command -v *)"
 
 - Только Jira Server/Data Center с Personal Access Token. Для Jira Cloud нужны `JIRA_USERNAME` и `JIRA_API_TOKEN` вместо PAT: поправьте `.mcp.json` под себя.
 - Календаря нет: встречи агент берёт из рассказа.
-- MR из GitLab видны, только если установлен и залогинен [`glab`](https://gitlab.com/gitlab-org/cli). Без него доказательства — локальные коммиты, а «MR смержен» помечается «со слов».
+- MR из GitLab агент видит через [`glab`](https://gitlab.com/gitlab-org/cli) или панель разработки Jira (если Jira связана с GitLab). Без обоих доказательства — локальные коммиты, а «MR смержен» помечается «со слов».
 - Workflow у команд разный. Переходы агент берёт из `jira_get_transitions` и не прыгает через статусы. Если прямого перехода нет, он скажет, какие есть.

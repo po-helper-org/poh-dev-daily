@@ -3,21 +3,36 @@
   "displayName": "Дейлик разработчика",
   "version": "0.1.0",
   "description": "Дейлик через ИИ-агента: рассказ разработчика → сверка с Jira и git → статусы и комментарии после одного «да» → план дня и сводка для команды",
-  "author": { "name": "po-helper-org" },
+  "author": {
+    "name": "po-helper-org"
+  },
   "repository": "https://github.com/po-helper-org/poh-dev-daily",
   "license": "MIT",
-  "keywords": ["jira", "daily", "standup", "planning"],
+  "keywords": [
+    "jira",
+    "daily",
+    "standup",
+    "planning"
+  ],
   "userConfig": {
     "jira_url": {
       "type": "string",
       "title": "Адрес Jira",
-      "description": "Корень вашего Jira Server/Data Center, например https://jira.example.com"
+      "description": "Корень вашего Jira Server/Data Center, например https://jira.example.com",
+      "required": true
     },
     "jira_token": {
       "type": "string",
       "title": "Personal Access Token Jira",
       "description": "Jira → профиль → Personal Access Tokens. Хранится в защищённом хранилище, не в settings.json",
-      "sensitive": true
+      "sensitive": true,
+      "required": true
+    },
+    "jira_ssl_verify": {
+      "type": "boolean",
+      "title": "Проверять SSL-сертификат Jira",
+      "description": "Выключайте, только если Jira на самоподписанном сертификате и корневой сертификат подключить нельзя (см. troubleshooting)",
+      "default": true
     }
   }
 }
