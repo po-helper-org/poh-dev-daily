@@ -1,0 +1,14 @@
+{
+  "name": "poh-dev-daily",
+  "owner": {
+    "name": "po-helper-org"
+  },
+  "description": "Плагины po-helper-org для разработчиков: дейлик через ИИ-агента",
+  "plugins": [
+    {
+      "name": "dev-daily",
+      "source": "./",
+      "description": "Дейлик через ИИ-агента: сверка с Jira и git, статусы и комментарии, план дня"
+    }
+  ]
+}
